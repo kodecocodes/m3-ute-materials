@@ -1,0 +1,30 @@
+# AI Guide: Setting Auto-Continuing Breakpoints via `InvokeDebuggerCommand`
+
+Notes from live troubleshooting of the Xcode MCP debugger tools. Follow this recipe instead of re-discovering it by trial and error.
+
+## Recipe
+
+1. **Launch under the debugger**: `RunProject` with `attachDebugger: true`.
+2. **Audit for stale breakpoints first**: `breakpoint list` (no ID — list everything). Xcode/lldb breakpoints are project-scoped and persist across relaunches *and* across crashed debug sessions, not just the current process. If an old breakpoint already sits at (or near) the line you're about to instrument, delete it (`breakpoint delete <id>`) or you'll get silent collisions later (see Pitfalls).
+3. **Set the breakpoint** at a line where the value you want is already assigned (e.g. the closing `}` of an `init`, not the assignment line itself — the value isn't readable yet on the assignment line):
+   `breakpoint set -f <File.swift> -l <line>`
+   - Right after launch it may resolve as `pending` (module not loaded yet). Re-run `breakpoint list <id>` a moment later — it resolves once the dylib loads.
+4. **Add exactly one action**, then check it:
+   `breakpoint command add -o "po <expr>" <id>`
+   - Prefer `po <expr>` — pretty-prints structs/enums reliably and is confirmed working when read directly from a real stop.
+   - If asked to use `print()` instead, pass it as `-o "print(<expr>)"` (Swift call syntax) or `-o "print <expr>"` (lldb's own alias, no parens) through `breakpoint command add`. Do **not** type either form as a bare standalone command — lldb's alias/shorthand parser errors on `print(<expr>)` with no space before the parenthesis (`unknown command shorthand suffix`), and a bare `breakpoint command add <id>` with no `-o` does not open a multiline prompt (see Pitfalls).
+5. **Set auto-continue natively** (do not try to chain a `"continue"` action):
+   `breakpoint modify -G true <id>`
+   This is the literal equivalent of Xcode's "Automatically continue after evaluating actions" checkbox.
+6. **Verify** with `breakpoint list -v <id>` — confirm it shows `enabled auto-continue` and the single action you expect. Also confirm with plain `process status` that the app is actually running and not stopped (see Pitfalls — don't trust `GetConsoleOutput`'s session state for this).
+7. **Capturing the data reliably is the unsolved part.** `GetConsoleOutput` did **not** surface the output of an auto-continuing breakpoint's `po`/`print` action in testing, even when the hit count confirmed the action ran. The only channel confirmed to work is reading a `po <expr>` result directly from `InvokeDebuggerCommand` while the process is genuinely stopped at the breakpoint (i.e. without `-G true`, or before you've applied it). If you need true fire-and-forget capture while the app stays responsive, an untested next step worth trying is routing the action through unified logging instead of `print`/`po`, e.g. `-o "expression -- NSLog(\"%@\", String(describing: <expr>))"` — system `oslog` entries (unlike plain stdout `print`) are confirmed to show up in `GetConsoleOutput`.
+
+## Pitfalls (confirmed by testing)
+
+- **Multiple `-o` flags don't append.** `breakpoint command add -o "cmd1" -o "cmd2" <id>` keeps only the *last* `-o`, silently dropping the first. Calling `breakpoint command add` again also *replaces* the action list rather than appending to it. If you need "print, then continue," don't try to chain two actions — use `breakpoint modify -G true` for the continue behavior instead.
+- **No interactive multiline mode.** Calling `breakpoint command add <id>` with no `-o` does *not* open a "type lines, finish with DONE" session across separate tool calls — each `InvokeDebuggerCommand` call is independent. A follow-up call is parsed as a fresh top-level command and will likely error.
+- **Check state before assuming the breakpoint hasn't fired.** SwiftUI can construct views eagerly (e.g. a `TabView` pre-building all tabs), so a breakpoint can already be hit before the user does anything. Always check `breakpoint list <id>` (hit count) and `process status` (stopped vs. running) rather than assuming the process is still waiting.
+- **Occasional XPC hiccups** can kill the debug session (`BSServiceConnectionErrorDomain`). If a subsequent `InvokeDebuggerCommand` call fails with "No app is currently running," just re-run `RunProject` with `attachDebugger: true` and redo the breakpoint setup — session state does not survive that error.
+- **Stale breakpoints from an earlier (even crashed) session silently defeat auto-continue.** Breakpoints are registered at the project/workspace level, not per-process — restarting the app with `RunProject` does not clear breakpoints created before a crash. If an old breakpoint with no `-G true` (and no `continue` action) still resolves to the same location as your new auto-continuing one, the process **will still stop for real** — any non-auto-continuing breakpoint sharing a location forces a stop regardless of what its siblings request. Symptom: hit counts climb but the process is genuinely paused each time (confirm with `process status`, not by trusting that things "seem to be working"). Fix: `breakpoint list` (all of them) before trusting a fresh setup, and `breakpoint delete <stale-id>`.
+- **`GetConsoleOutput`'s `State: running` field is not proof the debugged thread is unstopped.** It reflects the launch session, not lldb's stop state. Always cross-check with `process status` via `InvokeDebuggerCommand` when it matters.
+- **Auto-continuing breakpoint actions' output was not observed in `GetConsoleOutput`.** Extensive searching (varied `tailLimit`, regex patterns) never turned up the text a `po`/`print` action produced automatically on breakpoint hit, even though the hit count confirmed the action executed. Treat "capture data via auto-continue + read it back later from console output" as unproven; the only channel confirmed reliable is reading a `po <expr>` result directly from `InvokeDebuggerCommand`'s own return value while genuinely stopped.
