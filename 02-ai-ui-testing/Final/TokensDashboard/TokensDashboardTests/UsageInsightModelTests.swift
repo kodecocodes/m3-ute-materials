@@ -1,4 +1,5 @@
 /// Copyright (c) 2026 Kodeco Inc. See COPYRIGHT for details.
+/// Caution: This is AI-generated code.
 
 import Foundation
 import Testing
@@ -65,5 +66,23 @@ struct UsageInsightModelTests {
     #expect(titleRange.lowerBound < evidenceRange.lowerBound)
     #expect(evidenceRange.lowerBound < periodRange.lowerBound)
     #expect(periodRange.lowerBound < promptRange.lowerBound)
+  }
+
+  // MARK: - accessibilityLabel does not duplicate the period after evidence
+
+  @Test func accessibilityLabelDoesNotDoublePeriodWhenEvidenceEndsWithPeriod() {
+    let insight = UsageInsight(
+      category: .activity,
+      title: "AI Activity",
+      evidence: "Team token activity increased 20% compared with the prior period.",
+      reviewPrompt: "Review this alongside the team's current work.",
+      reportingPeriodLabel: "Apr 1–30, 2026 vs. Mar 1–31, 2026",
+      trendDirection: .increased
+    )
+
+    let label = insight.accessibilityLabel
+
+    #expect(!label.contains(".."))
+    #expect(label.contains("prior period. Apr 1–30"))
   }
 }
