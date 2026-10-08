@@ -29,7 +29,7 @@ struct UsageInsight: Identifiable {
   let trendDirection: UsageInsightTrendDirection?
   var id: UsageInsightCategory { category }
   var accessibilityLabel: String {
-    "\(title): \(evidence) \(reportingPeriodLabel). \(reviewPrompt)"
+    "\(title): \(evidence). \(reportingPeriodLabel). \(reviewPrompt)"
   }
 }
 
