@@ -67,7 +67,7 @@ struct UsageInsightModelTests {
     #expect(evidenceRange.lowerBound < periodRange.lowerBound)
     #expect(periodRange.lowerBound < promptRange.lowerBound)
   }
-
+  
   // MARK: - accessibilityLabel does not duplicate the period after evidence
 
   @Test func accessibilityLabelDoesNotDoublePeriodWhenEvidenceEndsWithPeriod() {

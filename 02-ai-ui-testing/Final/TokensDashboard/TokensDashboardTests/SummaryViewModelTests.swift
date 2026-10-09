@@ -13,7 +13,7 @@ struct SummaryViewModelTests {
     #expect(row.headline == "AI Usage Insights")
     #expect(row.detail == "Review aggregate team AI usage patterns.")
   }
-
+  
   @Test func insightsPreservesExistingRowsAndOrder() {
     let viewModel = SummaryViewModel()
     #expect(viewModel.insights.count == 4)
