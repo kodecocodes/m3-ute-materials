@@ -15,6 +15,7 @@ Here are a few key points:
 - The numbers reported here are approximate.
 - Token counts can vary significantly depending on the model used.
 - AI output can vary on every run.
+- Estimated costs use pay-as-you-go API prices in USD as of September 2026. If you use a Claude subscription plan, your usage counts against the plan's allowance instead.
 - The second model row in a demo's totals (`sonnet-4-6`) represents tokens consumed by subagents spawned during that conversation — not a separate manual step.
 - Throughout this course, use `/usage` in an Xcode conversation with Claude Agent to learn more about your usage quota and costs.
 
@@ -22,11 +23,12 @@ Here are a few key points:
 
 ### From Audits to a Test Plan
 
-| Model | Input | Cache Create | Cache Read | Output | Total Tokens |
+| Model | Input | Cache Create | Cache Read | Output | Totals |
 | ---: | ---: | ---: | ---: | ---: | ---: |
 |sonnet-5 | 170 | 951,195 | 19,263,320 | 125,999 | |
 |sonnet-4-6 | 74 | 251,140 | 1,506,098 | 19,590 | |
-|**Total** | | | | | **~22,117,586** |
+|**Total estimated tokens** | | | | | **~22,117,586** |
+|**Total estimated cost** | | | | | **~9.18** |
 
 **Per-prompt breakdown**
 
@@ -54,18 +56,19 @@ Here are a few key points:
 
 ### Testing the Running App With an AI Agent
 
-| Model | Input | Cache Create | Cache Read | Output | Total Tokens |
+| Model | Input | Cache Create | Cache Read | Output | Totals |
 | ---: | ---: | ---: | ---: | ---: | ---: |
 |sonnet-5 | 52 | 370,707 | 3,897,398 | 14,099 | |
 |sonnet-4-6 | 45 | 88,456 | 1,798,453 | 7,283 | |
-|**Total** | | | | | **~6,176,493** |
+|**Total estimated tokens** | | | | | **~6,176,493** |
+|**Total estimated cost** | | | | | **~2.83** |
 
 This demo is a single prompt (`/device-interaction`), so the per-prompt total is the same as the demo total above — the `sonnet-4-6` row is the subagent cost of running the simulator-driven test steps.
 
 ### AI Breakpoints
 
-| Model | Input | Cache Create | Cache Read | Output | Total Tokens |
-| ---: | ---: | ---: | ---: | ---: | ---: |
-|sonnet-5 | 44 | 22,673 | 1,675,438 | 6,071 | **~1,704,226** |
+| Model | Input | Cache Create | Cache Read | Output | Total Tokens | Total Estimated Cost |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+|sonnet-5 | 44 | 22,673 | 1,675,438 | 6,071 | **~1,704,226** | ~$0.45 |
 
 This demo is also a single prompt, with no subagents spawned — the per-prompt total matches the demo total above.
