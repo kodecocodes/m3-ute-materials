@@ -28,7 +28,7 @@ Here are a few key points:
 |sonnet-5 | 170 | 951,195 | 19,263,320 | 125,999 | |
 |sonnet-4-6 | 74 | 251,140 | 1,506,098 | 19,590 | |
 |**Total estimated tokens** | | | | | **~22,117,586** |
-|**Total estimated cost** | | | | | **~9.18** |
+|**Total estimated cost** | | | | | **~$9.18** |
 
 **Per-prompt breakdown**
 
@@ -61,7 +61,7 @@ Here are a few key points:
 |sonnet-5 | 52 | 370,707 | 3,897,398 | 14,099 | |
 |sonnet-4-6 | 45 | 88,456 | 1,798,453 | 7,283 | |
 |**Total estimated tokens** | | | | | **~6,176,493** |
-|**Total estimated cost** | | | | | **~2.83** |
+|**Total estimated cost** | | | | | **~$2.83** |
 
 This demo is a single prompt (`/device-interaction`), so the per-prompt total is the same as the demo total above — the `sonnet-4-6` row is the subagent cost of running the simulator-driven test steps.
 
@@ -69,6 +69,6 @@ This demo is a single prompt (`/device-interaction`), so the per-prompt total is
 
 | Model | Input | Cache Create | Cache Read | Output | Total Tokens | Total Estimated Cost |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-|sonnet-5 | 44 | 22,673 | 1,675,438 | 6,071 | **~1,704,226** | ~$0.45 |
+|sonnet-5 | 44 | 22,673 | 1,675,438 | 6,071 | **~1,704,226** | **~$0.45** |
 
 This demo is also a single prompt, with no subagents spawned — the per-prompt total matches the demo total above.
